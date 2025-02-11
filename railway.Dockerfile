@@ -1,0 +1,26 @@
+# Используем официальный образ Apache Superset
+FROM apache/superset:latest
+
+# Устанавливаем зависимости (если нужно)
+RUN pip install --no-cache-dir psycopg2-binary redis
+
+# Открываем порт
+EXPOSE 8088
+
+# Устанавливаем переменные окружения для подключения к БД
+ENV SUPERSET_DATABASE_URI=postgresql://superset:superset@db:5432/superset
+ENV REDIS_URL=redis://redis:6379/0
+
+# Создаём админа (при первом запуске)
+RUN superset fab create-admin \
+    --username admin \
+    --firstname Superset \
+    --lastname Admin \
+    --email admin@superset.com \
+    --password admin
+
+# Инициализируем базу
+RUN superset db upgrade
+
+# Запускаем Superset
+CMD ["gunicorn", "-b", "0.0.0.0:8088", "--workers", "5", "--timeout", "60", "superset.app:create_app()"]

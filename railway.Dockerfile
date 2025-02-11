@@ -8,7 +8,6 @@ RUN pip install --no-cache-dir psycopg2-binary redis
 EXPOSE 8088
 
 # Устанавливаем переменные окружения для подключения к БД
-ENV SUPERSET_DATABASE_URI=postgresql://superset:superset@db:5432/superset
 ENV REDIS_URL=redis://redis:6379/0
 
 # Создаём админа (при первом запуске)

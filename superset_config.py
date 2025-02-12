@@ -1,0 +1,3 @@
+import os
+
+SECRET_KEY = os.getenv("SECRET_KEY", "QKJjP0D0xEPd5d+EokXwWjn0vY80Jeb9B3QN37gSJBXCcX24fLRrZ63P")

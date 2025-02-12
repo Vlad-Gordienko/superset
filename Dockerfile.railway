@@ -10,6 +10,9 @@ EXPOSE 8088
 # Устанавливаем переменные окружения для подключения к БД
 ENV REDIS_URL=redis://redis:6379/0
 
+ARG SECRET_KEY
+ENV SECRET_KEY=${SECRET_KEY}
+
 RUN echo "SECRET_KEY=${SECRET_KEY}"
 
 # Создаём админа (при первом запуске)

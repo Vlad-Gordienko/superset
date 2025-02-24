@@ -2,10 +2,15 @@ import pandas as pd
 import os
 import datetime
 
-INPUT_FILENAME = "data/geburtsjahrgangsstatistik.xlsx"
+FILENAME = "geburtsjahrgangsstatistik.xlsx"
+INPUT_DIR = "data"
 OUTPUT_DIR = "dist"
+SHEET_NAME = "dadigesamt"
 
-def parse_excel(sheet_name: str):
+INPUT_FILENAME = os.path.join(INPUT_DIR, FILENAME)
+OUTPUT_FILENAME = os.path.join(OUTPUT_DIR, FILENAME)
+
+def parse_excel():
     try:
         os.makedirs(OUTPUT_DIR, exist_ok=True)
 
@@ -15,11 +20,11 @@ def parse_excel(sheet_name: str):
 
         xls = pd.ExcelFile(INPUT_FILENAME)
 
-        if sheet_name not in xls.sheet_names:
-            print(f"Error: Sheet '{sheet_name}' not found in the file. Available sheets: {xls.sheet_names}")
+        if SHEET_NAME not in xls.sheet_names:
+            print(f"Error: Sheet '{SHEET_NAME}' not found in the file. Available sheets: {xls.sheet_names}")
             return
 
-        df = pd.read_excel(xls, sheet_name=sheet_name, dtype=str)
+        df = pd.read_excel(xls, sheet_name=SHEET_NAME, dtype=str)
 
         columns_to_keep = ["Gebiet", "Jahrgang", "M gesamt", "W gesamt", "EW gesamt"]
         missing_columns = [col for col in columns_to_keep if col not in df.columns]
@@ -57,17 +62,14 @@ def parse_excel(sheet_name: str):
 
         grouped_df = df.groupby(["Gebiet", "Gruppe"])[["M gesamt", "W gesamt", "EW gesamt"]].sum().reset_index()
 
-        output_filename = os.path.join(OUTPUT_DIR, os.path.basename(INPUT_FILENAME))
-
         if not os.access(OUTPUT_DIR, os.W_OK):
             print(f"Error: No write permission for directory {OUTPUT_DIR}")
             return
 
-        grouped_df.to_excel(output_filename, index=False)
-        print(f"Result saved to {output_filename}")
+        grouped_df.to_excel(OUTPUT_FILENAME, index=False)
+        print(f"Result saved to {OUTPUT_FILENAME}")
     except Exception as e:
         print(f"Error processing file: {e}")
 
 if __name__ == "__main__":
-    sheet_name = "dadigesamt"
-    parse_excel(sheet_name)
+    parse_excel()

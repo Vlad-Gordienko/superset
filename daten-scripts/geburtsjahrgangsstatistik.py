@@ -41,6 +41,10 @@ def parse_excel():
         for col in ["M gesamt", "W gesamt", "EW gesamt"]:
             df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(int)
 
+        df["M quotient"] = ""
+        df["W quotient"] = ""
+        df["EW quotient"] = ""
+
         invalid_rows = df[df[["M gesamt", "W gesamt", "EW gesamt"]].map(lambda x: not str(x).isdigit()).any(axis=1)]
 
         if not invalid_rows.empty:
@@ -52,15 +56,17 @@ def parse_excel():
         def classify_age_group(year):
             age = current_year - year
             if age < 18:
-                return "Jugendquotient"
+                return "Jugend"
             elif age > 65:
-                return "Altenquotient"
-            else:
-                return "Andere"
+                return "Alten"
 
         df["Gruppe"] = df["Jahrgang"].apply(classify_age_group)
 
         grouped_df = df.groupby(["Gebiet", "Gruppe"])[["M gesamt", "W gesamt", "EW gesamt"]].sum().reset_index()
+
+        grouped_df["M quotient"] = ""
+        grouped_df["W quotient"] = ""
+        grouped_df["EW quotient"] = ""
 
         if not os.access(OUTPUT_DIR, os.W_OK):
             print(f"Error: No write permission for directory {OUTPUT_DIR}")

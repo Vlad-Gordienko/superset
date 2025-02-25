@@ -51,12 +51,12 @@ def parse_excel():
 
         def classify_age_group(year):
             age = current_year - year
-            if age < 18:
-                return "Jugendquotient"
-            elif age > 65:
-                return "Altenquotient"
+            if age < 21:
+                return "unter 21 Jährige"
+            elif age > 64:
+                return "65 Jahre und älter "
             else:
-                return "Andere"
+                return "21 Jahre - 65 Jahre"
 
         df["Gruppe"] = df["Jahrgang"].apply(classify_age_group)
 

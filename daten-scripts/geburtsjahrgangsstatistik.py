@@ -76,9 +76,9 @@ def parse_excel():
         def classify_age_group(year):
             age = current_year - year
             if age < 21:
-                return "Unter 21 Jährige"
+              return "Unter 21 Jährige"
             elif age > 64:
-                return "65 Jahre und älter"
+               return "65 Jahre und älter"
             return "21 Jahre - 65 Jahre"
 
         df["Gruppe"] = df["Jahrgang"].apply(classify_age_group)

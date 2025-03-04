@@ -73,6 +73,8 @@ def parse_excel():
     grouped_df["W quotient"] = ((grouped_df["W gesamt"] / grouped_df["W total"]) * 100).round(2).astype(str) + "%"
     grouped_df["EW quotient"] = ((grouped_df["EW gesamt"] / grouped_df["EW total"]) * 100).round(2).astype(str) + "%"
 
+    grouped_df = grouped_df[~grouped_df["Gemeinde"].isin(["Ausgewählte Gebiete zusammengefasst", "Sanierungsgebiet"])]
+
     grouped_df.to_excel(OUTPUT_FILENAME, index=False)
     print(f"Result saved to {OUTPUT_FILENAME}")
 

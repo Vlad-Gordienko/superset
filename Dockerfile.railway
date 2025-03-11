@@ -10,14 +10,17 @@ ENV SUPERSET_CONFIG_PATH=/app/superset/superset_config.py
 # Копируем конфиг
 COPY superset_config.py /app/superset/superset_config.py
 
-# Создаём админа (при первом запуске)
+# Обновляем базу данных и сбрасываем права
 RUN superset db upgrade
+RUN superset reset-perms
+
+# Создаём нового администратора с полными правами
 RUN superset fab create-admin \
-    --username admin \
-    --firstname Superset \
+    --username superadmin \
+    --firstname Super \
     --lastname Admin \
     --email admin@superset.com \
-    --password admin
+    --password superpassword
 
 # Запускаем Superset
 CMD ["gunicorn", "-b", "0.0.0.0:8088", "--workers", "5", "--timeout", "60", "superset.app:create_app()"]

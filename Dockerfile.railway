@@ -1,15 +1,12 @@
 FROM apache/superset:latest
 
-RUN pip install --no-cache-dir psycopg2-binary redis
+RUN pip install --no-cache-dir psycopg2-binary redis flask-cors
 
 ENV SUPERSET_CONFIG_PATH=/app/superset/superset_config.py
 
 COPY superset_config.py /app/superset/superset_config.py
 
-ENV POSTGRES_PASSWORD=JsudmSAXmiWazQtDuBFihhWOMxhZbzzw
-ENV POSTGRES_HOST=autorack.proxy.rlwy.net
-ENV POSTGRES_PORT=43068
-ENV DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/superset
+ENV DATABASE_URL=postgresql://postgres:${PGPASSWORD}@${PGHOST}:${PGPORT}/railway
 ENV REDIS_URL=redis://${REDIS_HOST}:${REDIS_PORT}/0
 
 RUN superset db upgrade

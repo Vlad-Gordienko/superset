@@ -214,6 +214,7 @@ import venezuela from './countries/venezuela.geojson';
 import vietnam from './countries/vietnam.geojson';
 import wallis_and_futuna from './countries/wallis_and_futuna.geojson';
 import wetteraukreis from './countries/wetteraukreis.geojson';
+import wk_gemeinden from './countries/wk_gemeinden.geojson';
 import yemen from './countries/yemen.geojson';
 import zambia from './countries/zambia.geojson';
 import zimbabwe from './countries/zimbabwe.geojson';
@@ -416,6 +417,7 @@ export const countries = {
   vietnam,
   wallis_and_futuna,
   wetteraukreis,
+  wk_gemeinden,
   yemen,
   zambia,
   zimbabwe,

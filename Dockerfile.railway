@@ -1,21 +1,17 @@
 FROM apache/superset:latest
 
-# Устанавливаем зависимости
 RUN pip install --no-cache-dir psycopg2-binary redis
 
-# Указываем путь к конфигурации Superset
 ENV SUPERSET_CONFIG_PATH=/app/superset/superset_config.py
 
-# Копируем конфигурационный файл
 COPY superset_config.py /app/superset/superset_config.py
 
-# Указываем переменные окружения для подключения к базе PostgreSQL и Redis
+ENV POSTGRES_PASSWORD=JsudmSAXmiWazQtDuBFihhWOMxhZbzzw
 ENV POSTGRES_HOST=autorack.proxy.rlwy.net
 ENV POSTGRES_PORT=43068
 ENV DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/superset
 ENV REDIS_URL=redis://${REDIS_HOST}:${REDIS_PORT}/0
 
-# Выполняем миграцию БД и создаём администратора
 RUN superset db upgrade
 RUN superset fab create-admin \
     --username admin \
@@ -24,8 +20,6 @@ RUN superset fab create-admin \
     --email admin@superset.com \
     --password admin
 
-# Инициализируем Superset
 RUN superset init
 
-# Запускаем Superset через gunicorn
 CMD ["gunicorn", "-b", "0.0.0.0:8088", "--workers", "5", "--timeout", "60", "superset.app:create_app()"]

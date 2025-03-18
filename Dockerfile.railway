@@ -6,8 +6,11 @@ ENV SUPERSET_CONFIG_PATH=/app/superset/superset_config.py
 
 COPY superset_config.py /app/superset/superset_config.py
 
-ENV DATABASE_URL=postgresql://postgres:${PGPASSWORD}@${PGHOST}:${PGPORT}/railway
-ENV REDIS_URL=redis://${REDIS_HOST}:${REDIS_PORT}/0
+ARG DATABASE_URL
+ENV DATABASE_URL=${DATABASE_URL}
+
+ARG REDIS_URL
+ENV REDIS_URL=${REDIS_URL}
 
 RUN superset db upgrade
 RUN superset fab create-admin \

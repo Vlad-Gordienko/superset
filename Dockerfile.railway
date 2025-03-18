@@ -6,7 +6,7 @@ ENV SUPERSET_CONFIG_PATH=/app/superset/superset_config.py
 
 COPY superset_config.py /app/superset/superset_config.py
 
-ENV DATABASE_URL="postgresql://postgres:JsudmSAXmiWazQtDuBFihhWOMxhZbzzw@postgres.railway.internal:5432/railway"
+ENV DATABASE_URL="postgresql://postgres:JsudmSAXmiWazQtDuBFihhWOMxhZbzzw@autorack.proxy.rlwy.net:43068/railway"
 
 RUN superset db upgrade
 RUN superset fab create-admin \

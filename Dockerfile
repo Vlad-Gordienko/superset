@@ -249,8 +249,6 @@ RUN --mount=type=cache,target=${SUPERSET_HOME}/.cache/uv \
     uv pip install .
 
 RUN uv pip install .[postgres]
-RUN uv pip install flask-cors
-
 RUN python -m compileall /app/superset
 
 USER superset
@@ -261,7 +259,5 @@ USER superset
 FROM lean AS ci
 USER root
 RUN uv pip install .[postgres]
-RUN uv pip install flask-cors
-
 USER superset
 CMD ["/app/docker/entrypoints/docker-ci.sh"]

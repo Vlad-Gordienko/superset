@@ -8,10 +8,11 @@ SQLALCHEMY_DATABASE_URI = os.getenv(
 )
 
 CACHE_CONFIG = {
-    "CACHE_TYPE": "SimpleCache",
+    "CACHE_TYPE": "RedisCache",
     "CACHE_DEFAULT_TIMEOUT": 300,
+    "CACHE_KEY_PREFIX": "superset_",
+    "CACHE_REDIS_URL": os.getenv("REDIS_URL", "redis://localhost:6379/0"),
 }
-
 
 ENABLE_CORS = True
 CORS_OPTIONS = {

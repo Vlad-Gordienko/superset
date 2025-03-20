@@ -26,6 +26,3 @@ FEATURE_FLAGS = {
     "ENABLE_TEMPLATE_PROCESSING": True,
     "CELERY_TASKS": True,
 }
-
-#test deploy
-

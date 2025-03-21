@@ -1,4 +1,5 @@
-FROM apache/superset:latest
+#FROM apache/superset:latest
+FROM volandgordienko/wk-superset:latest
 
 RUN pip install --no-cache-dir psycopg2-binary flask-cors
 

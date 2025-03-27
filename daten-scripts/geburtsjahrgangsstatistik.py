@@ -46,10 +46,10 @@ def parse_excel():
     def classify_group(year):
         age = current_year - year
         if age < 21:
-            return "young"
+            return "junge"
         elif age > 64:
-            return "elder"
-        return "sonstige"
+            return "alte"
+        return "mittleren"
 
     df["gruppe"] = df["Jahrgang"].apply(classify_group)
 
@@ -57,17 +57,17 @@ def parse_excel():
     grouped["amtlicher gemeindeschlüssel"] = grouped["Gemeinde"].map(lambda x: gebiet_schluessel.get(x, ("", ""))[0])
     grouped["iso"] = grouped["Gemeinde"].map(lambda x: gebiet_schluessel.get(x, ("", ""))[1])
 
-    grouped["young quotient"] = (grouped["young"] / grouped["sonstige"]).replace([float("inf"), -float("inf")], 0) * 100
-    grouped["elder quotient"] = (grouped["elder"] / grouped["sonstige"]).replace([float("inf"), -float("inf")], 0) * 100
+    grouped["junge quotient"] = (grouped["junge"] / grouped["mittleren"]).replace([float("inf"), -float("inf")], 0) * 100
+    grouped["alte quotient"] = (grouped["alte"] / grouped["mittleren"]).replace([float("inf"), -float("inf")], 0) * 100
 
-    grouped["young quotient"] = grouped["young quotient"].round(2).astype(str) + "%"
-    grouped["elder quotient"] = grouped["elder quotient"].round(2).astype(str) + "%"
+    grouped["junge quotient"] = grouped["junge quotient"].round(2).astype(str) + "%"
+    grouped["alte quotient"] = grouped["alte quotient"].round(2).astype(str) + "%"
 
     grouped = grouped.rename(columns={
         "Gemeinde": "gemeinde",
-        "young": "young count",
-        "elder": "elder count",
-        "sonstige": "sonstige count"
+        "junge": "junge count",
+        "alte": "alte count",
+        "mittleren": "mittleren count"
     })
 
     grouped = grouped[~grouped["gemeinde"].isin(["Ausgewählte Gebiete zusammengefasst", "Sanierungsgebiet"])]
@@ -76,11 +76,11 @@ def parse_excel():
         "gemeinde",
         "amtlicher gemeindeschlüssel",
         "iso",
-        "young count",
-        "elder count",
-        "sonstige count",
-        "young quotient",
-        "elder quotient"
+        "junge count",
+        "alte count",
+        "mittleren count",
+        "junge quotient",
+        "alte quotient"
     ]
 
     grouped[final_columns].to_excel(OUTPUT_FILENAME, index=False)

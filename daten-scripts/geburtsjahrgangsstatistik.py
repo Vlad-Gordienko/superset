@@ -22,7 +22,7 @@ def parse_excel():
 
     xls = pd.ExcelFile(INPUT_FILENAME)
     if SHEET_NAME not in xls.sheet_names:
-        print(f"Error: Sheet '{SHEET_NAME}' not found in the file. Available sheets: {xls.sheet_names}")
+        print(f"Error: Sheet '{SHEET_NAME}' not found. Available: {xls.sheet_names}")
         return
 
     df = pd.read_excel(xls, sheet_name=SHEET_NAME, dtype=str)
@@ -35,44 +35,54 @@ def parse_excel():
 
     df["Gemeinde"] = df["Gebiet"].map(lambda x: sorted_gebiet_to_gemeinde.get(x, x))
 
-    columns_to_keep = ["Gemeinde", "Jahrgang", "EW gesamt"]
-    missing_columns = [col for col in columns_to_keep if col not in df.columns]
-    if missing_columns:
-        print(f"Error: Missing columns {missing_columns}")
+    if "EW gesamt" not in df.columns:
+        print("Error: Column 'EW gesamt' not found.")
         return
-
-    df = df[columns_to_keep]
 
     df["EW gesamt"] = pd.to_numeric(df["EW gesamt"], errors='coerce').fillna(0).astype(int)
 
     current_year = datetime.datetime.now().year
-    def classify_age_group(year):
+
+    def classify_group(year):
         age = current_year - year
         if age < 21:
-            return "Unter 21 Jährige"
+            return "young"
         elif age > 64:
-            return "65 Jahre und älter"
-        return "21 Jahre - 65 Jahre"
+            return "elder"
+        return "sonstige"
 
-    df["Gruppe"] = df["Jahrgang"].apply(classify_age_group)
+    df["gruppe"] = df["Jahrgang"].apply(classify_group)
 
-    grouped_df = df.groupby(["Gemeinde", "Gruppe"])[["EW gesamt"]].sum().reset_index()
+    grouped_df = df.groupby(["Gemeinde", "gruppe"])["EW gesamt"].sum().reset_index()
 
-    total_population = df.groupby("Gemeinde")[["EW gesamt"]].sum().reset_index()
-    total_population = total_population.rename(columns={
-        "EW gesamt": "EW total"
+    total_df = grouped_df.groupby("Gemeinde")["EW gesamt"].sum().reset_index()
+    total_df = total_df.rename(columns={"EW gesamt": "EW total"})
+
+    merged = grouped_df.merge(total_df, on="Gemeinde")
+    merged["ew quotient"] = ((merged["EW gesamt"] / merged["EW total"]) * 100).round(2).astype(str) + "%"
+
+    merged["amtlicher gemeindeschlüssel"] = merged["Gemeinde"].map(lambda x: gebiet_schluessel.get(x, ("", ""))[0])
+    merged["iso"] = merged["Gemeinde"].map(lambda x: gebiet_schluessel.get(x, ("", ""))[1])
+
+    final_df = merged.pivot_table(
+        index=["Gemeinde", "amtlicher gemeindeschlüssel", "iso"],
+        columns="gruppe",
+        values="ew quotient",
+        aggfunc="first"
+    ).reset_index()
+
+    final_df = final_df.rename(columns={
+        "Gemeinde": "gemeinde",
+        "amtlicher gemeindeschlüssel": "amtlicher gemeindeschlüssel",
+        "iso": "iso",
+        "young": "young quotient",
+        "sonstige": "sonstige quotient",
+        "elder": "elder quotient"
     })
 
-    grouped_df = grouped_df.merge(total_population, on="Gemeinde", how="left")
+    final_df = final_df[~final_df["gemeinde"].isin(["Ausgewählte Gebiete zusammengefasst", "Sanierungsgebiet"])]
 
-    grouped_df.insert(1, "Amtlicher Gemeinde-schlüssel", grouped_df["Gemeinde"].map(lambda x: gebiet_schluessel.get(x, ("", ""))[0]))
-    grouped_df.insert(2, "ISO", grouped_df["Gemeinde"].map(lambda x: gebiet_schluessel.get(x, ("", ""))[1]))
-
-    grouped_df["EW quotient"] = ((grouped_df["EW gesamt"] / grouped_df["EW total"]) * 100).round(2).astype(str) + "%"
-
-    grouped_df = grouped_df[~grouped_df["Gemeinde"].isin(["Ausgewählte Gebiete zusammengefasst", "Sanierungsgebiet"])]
-
-    grouped_df.to_excel(OUTPUT_FILENAME, index=False)
+    final_df.to_excel(OUTPUT_FILENAME, index=False)
     print(f"Result saved to {OUTPUT_FILENAME}")
 
 if __name__ == "__main__":

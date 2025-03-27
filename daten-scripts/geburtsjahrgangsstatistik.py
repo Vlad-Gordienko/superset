@@ -53,36 +53,37 @@ def parse_excel():
 
     df["gruppe"] = df["Jahrgang"].apply(classify_group)
 
-    grouped_df = df.groupby(["Gemeinde", "gruppe"])["EW gesamt"].sum().reset_index()
+    grouped = df.groupby(["Gemeinde", "gruppe"])["EW gesamt"].sum().unstack(fill_value=0).reset_index()
+    grouped["amtlicher gemeindeschlüssel"] = grouped["Gemeinde"].map(lambda x: gebiet_schluessel.get(x, ("", ""))[0])
+    grouped["iso"] = grouped["Gemeinde"].map(lambda x: gebiet_schluessel.get(x, ("", ""))[1])
 
-    total_df = grouped_df.groupby("Gemeinde")["EW gesamt"].sum().reset_index()
-    total_df = total_df.rename(columns={"EW gesamt": "EW total"})
+    grouped["young quotient"] = (grouped["young"] / grouped["sonstige"]).replace([float("inf"), -float("inf")], 0) * 100
+    grouped["elder quotient"] = (grouped["elder"] / grouped["sonstige"]).replace([float("inf"), -float("inf")], 0) * 100
 
-    merged = grouped_df.merge(total_df, on="Gemeinde")
-    merged["ew quotient"] = ((merged["EW gesamt"] / merged["EW total"]) * 100).round(2).astype(str) + "%"
+    grouped["young quotient"] = grouped["young quotient"].round(2).astype(str) + "%"
+    grouped["elder quotient"] = grouped["elder quotient"].round(2).astype(str) + "%"
 
-    merged["amtlicher gemeindeschlüssel"] = merged["Gemeinde"].map(lambda x: gebiet_schluessel.get(x, ("", ""))[0])
-    merged["iso"] = merged["Gemeinde"].map(lambda x: gebiet_schluessel.get(x, ("", ""))[1])
-
-    final_df = merged.pivot_table(
-        index=["Gemeinde", "amtlicher gemeindeschlüssel", "iso"],
-        columns="gruppe",
-        values="ew quotient",
-        aggfunc="first"
-    ).reset_index()
-
-    final_df = final_df.rename(columns={
+    grouped = grouped.rename(columns={
         "Gemeinde": "gemeinde",
-        "amtlicher gemeindeschlüssel": "amtlicher gemeindeschlüssel",
-        "iso": "iso",
-        "young": "young quotient",
-        "sonstige": "sonstige quotient",
-        "elder": "elder quotient"
+        "young": "young count",
+        "elder": "elder count",
+        "sonstige": "sonstige count"
     })
 
-    final_df = final_df[~final_df["gemeinde"].isin(["Ausgewählte Gebiete zusammengefasst", "Sanierungsgebiet"])]
+    grouped = grouped[~grouped["gemeinde"].isin(["Ausgewählte Gebiete zusammengefasst", "Sanierungsgebiet"])]
 
-    final_df.to_excel(OUTPUT_FILENAME, index=False)
+    final_columns = [
+        "gemeinde",
+        "amtlicher gemeindeschlüssel",
+        "iso",
+        "young count",
+        "elder count",
+        "sonstige count",
+        "young quotient",
+        "elder quotient"
+    ]
+
+    grouped[final_columns].to_excel(OUTPUT_FILENAME, index=False)
     print(f"Result saved to {OUTPUT_FILENAME}")
 
 if __name__ == "__main__":

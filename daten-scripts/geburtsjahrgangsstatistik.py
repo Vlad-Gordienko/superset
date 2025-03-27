@@ -7,7 +7,7 @@ from common.sorted_gebiet_to_gemeinde import sorted_gebiet_to_gemeinde
 
 FILENAME = "geburtsjahrgangsstatistik.xlsx"
 INPUT_DIR = "data"
-OUTPUT_DIR = "dist"
+OUTPUT_DIR = "result"
 SHEET_NAME = "dadigesamt"
 
 INPUT_FILENAME = os.path.join(INPUT_DIR, FILENAME)

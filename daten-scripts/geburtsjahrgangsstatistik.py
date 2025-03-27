@@ -35,7 +35,7 @@ def parse_excel():
 
     df["Gemeinde"] = df["Gebiet"].map(lambda x: sorted_gebiet_to_gemeinde.get(x, x))
 
-    columns_to_keep = ["Gemeinde", "Jahrgang", "M gesamt", "W gesamt", "EW gesamt"]
+    columns_to_keep = ["Gemeinde", "Jahrgang", "EW gesamt"]
     missing_columns = [col for col in columns_to_keep if col not in df.columns]
     if missing_columns:
         print(f"Error: Missing columns {missing_columns}")
@@ -43,8 +43,7 @@ def parse_excel():
 
     df = df[columns_to_keep]
 
-    for col in ["M gesamt", "W gesamt", "EW gesamt"]:
-        df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(int)
+    df["EW gesamt"] = pd.to_numeric(df["EW gesamt"], errors='coerce').fillna(0).astype(int)
 
     current_year = datetime.datetime.now().year
     def classify_age_group(year):
@@ -57,11 +56,11 @@ def parse_excel():
 
     df["Gruppe"] = df["Jahrgang"].apply(classify_age_group)
 
-    grouped_df = df.groupby(["Gemeinde", "Gruppe"])[["M gesamt", "W gesamt", "EW gesamt"]].sum().reset_index()
+    grouped_df = df.groupby(["Gemeinde", "Gruppe"])[["EW gesamt"]].sum().reset_index()
 
-    total_population = df.groupby("Gemeinde")[["M gesamt", "W gesamt", "EW gesamt"]].sum().reset_index()
+    total_population = df.groupby("Gemeinde")[["EW gesamt"]].sum().reset_index()
     total_population = total_population.rename(columns={
-        "M gesamt": "M total", "W gesamt": "W total", "EW gesamt": "EW total"
+        "EW gesamt": "EW total"
     })
 
     grouped_df = grouped_df.merge(total_population, on="Gemeinde", how="left")
@@ -69,8 +68,6 @@ def parse_excel():
     grouped_df.insert(1, "Amtlicher Gemeinde-schlüssel", grouped_df["Gemeinde"].map(lambda x: gebiet_schluessel.get(x, ("", ""))[0]))
     grouped_df.insert(2, "ISO", grouped_df["Gemeinde"].map(lambda x: gebiet_schluessel.get(x, ("", ""))[1]))
 
-    grouped_df["M quotient"] = ((grouped_df["M gesamt"] / grouped_df["M total"]) * 100).round(2).astype(str) + "%"
-    grouped_df["W quotient"] = ((grouped_df["W gesamt"] / grouped_df["W total"]) * 100).round(2).astype(str) + "%"
     grouped_df["EW quotient"] = ((grouped_df["EW gesamt"] / grouped_df["EW total"]) * 100).round(2).astype(str) + "%"
 
     grouped_df = grouped_df[~grouped_df["Gemeinde"].isin(["Ausgewählte Gebiete zusammengefasst", "Sanierungsgebiet"])]

@@ -3,7 +3,7 @@ import os
 import datetime
 
 from common.gebiet_schluessel import gebiet_schluessel
-from common.sorted_gebiet_to_gemeinde import sorted_gebiet_to_gemeinde
+from common.mapping import get_gemeinde_from_gebiet, track_undetected_gebiete, log_missing_gebiete
 
 FILENAME = "geburtsjahrgangsstatistik.xlsx"
 INPUT_DIR = "data"
@@ -33,7 +33,11 @@ def parse_excel():
     df = df.dropna(subset=["Jahrgang"])
     df["Jahrgang"] = df["Jahrgang"].astype(int)
 
-    df["Gemeinde"] = df["Gebiet"].map(lambda x: sorted_gebiet_to_gemeinde.get(x, x))
+    df["Gemeinde"] = df["Gebiet"].map(lambda x: get_gemeinde_from_gebiet(x))
+
+    all_gebieten = df["Gebiet"].dropna().unique().tolist()
+    undetected_gebiete = track_undetected_gebiete(all_gebieten)
+    log_missing_gebiete(undetected_gebiete)
 
     if "EW gesamt" not in df.columns:
         print("Error: Column 'EW gesamt' not found.")

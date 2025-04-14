@@ -1,7 +1,7 @@
 from .gemeinden import Ranstadt
 
 Bellmuth = ['Bellmuth']
-Bobenhausen = ['Bobenhausen']
+Bobenhausen = ['Bobenhausen', 'Bobenhausen I']
 Dauernheim = ['Dauernheim']
 Ober_Mockstadt = ['Ober-Mockstadt']
 

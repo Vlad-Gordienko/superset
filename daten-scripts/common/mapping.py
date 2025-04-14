@@ -119,7 +119,7 @@ mapping_gemeinde = {
 }
 
 
-ignore_list = {'Ausgewählte Gebiete zusammengefasst', 'Bobenhausen I', 'Sanierungsgebiet'}
+ignore_list = {'Ausgewählte Gebiete zusammengefasst', 'Sanierungsgebiet'}
 
 def normalize(text: str) -> str:
     return (
@@ -165,11 +165,14 @@ def track_undetected_gebiete(input_gebiete: list[str]) -> dict:
 
 def log_missing_gebiete(found_by_gemeinde: dict):
     for gemeinde, all_gebiete_nested in mapping.items():
-        expected = {g for block in all_gebiete_nested for g in block}
-        found = found_by_gemeinde.get(gemeinde, set())
-        missing = expected - found
+        missing = []
+
+        for gebiet_group in all_gebiete_nested:
+            if not any(g in found_by_gemeinde.get(gemeinde, set()) for g in gebiet_group):
+                missing.extend(gebiet_group)
 
         if missing:
             logging.warning(
                 f"Gemeinde '{mapping_gemeinde[gemeinde][0]}' is missing {len(missing)} Gebiet(e): {sorted(missing)}"
             )
+
